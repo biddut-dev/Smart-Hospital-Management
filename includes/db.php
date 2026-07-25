@@ -1,31 +1,51 @@
 <?php
 /**
  * Smart Hospital Management System
- * Database Connection Helper (PDO) & Environment Variable Support
+ * Database Connection Helper (PDO) & Cloud MySQL Support (Aiven, Render, etc.)
  */
 
 $db_host = getenv('DB_HOST') ?: 'localhost';
+$db_port = getenv('DB_PORT') ?: '3306';
 $db_user = getenv('DB_USER') ?: 'root';
 $db_pass = getenv('DB_PASS') !== false ? getenv('DB_PASS') : '';
 $db_name = getenv('DB_NAME') ?: 'hospital_db';
 
 try {
-    // Attempt connecting to specified database
-    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass, [
+    // Attempt connecting to specified database with port support
+    $pdo = new PDO("mysql:host=$db_host;port=$db_port;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
+
+    // Self-healing check: Auto-create tables if doctors table is missing
+    $table_check = false;
+    try {
+        $table_check = $pdo->query("SHOW TABLES LIKE 'doctors'")->fetch();
+    } catch (Exception $e) {}
+
+    if (!$table_check) {
+        $sql_file = __DIR__ . '/../database/infinityfree_import.sql';
+        if (file_exists($sql_file)) {
+            $sql_content = file_get_contents($sql_file);
+            $statements = array_filter(array_map('trim', explode(';', $sql_content)));
+            foreach ($statements as $stmt) {
+                if (!empty($stmt)) {
+                    try { $pdo->exec($stmt); } catch (Exception $ex) {}
+                }
+            }
+        }
+    }
 } catch (PDOException $e) {
     // If running on local XAMPP and database does not exist, try to auto-create
     try {
-        $pdo_root = new PDO("mysql:host=$db_host;charset=utf8mb4", $db_user, $db_pass, [
+        $pdo_root = new PDO("mysql:host=$db_host;port=$db_port;charset=utf8mb4", $db_user, $db_pass, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ]);
         
         $pdo_root->exec("CREATE DATABASE IF NOT EXISTS `$db_name` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
         
-        $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass, [
+        $pdo = new PDO("mysql:host=$db_host;port=$db_port;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
@@ -40,7 +60,7 @@ try {
         die("<div style='font-family:sans-serif; padding:20px; background:#fee2e2; border:1px solid #ef4444; border-radius:8px; margin:20px; color:#991b1b;'>
                 <h3>Database Connection Failed</h3>
                 <p><strong>Error:</strong> " . htmlspecialchars($ex->getMessage()) . "</p>
-                <p>Please ensure your MySQL database is running and environment variables are set.</p>
+                <p>Please check your Aiven / MySQL Environment Variables (DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME).</p>
              </div>");
     }
 }
