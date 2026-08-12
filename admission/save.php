@@ -9,15 +9,15 @@
 <?php
 include "../connection.php";
 
-$patient_id     = intval($_POST['patient_id']);
-$room_id        = intval($_POST['room_id']);
-$admission_date = mysqli_real_escape_string($conn, $_POST['admission_date']);
+$patient_id     = $_POST['patient_id'];
+$room_id        = $_POST['room_id'];
+$admission_date = $_POST['admission_date'];
 
 $sql = "INSERT INTO admissions (patient_id, room_id, admission_date, status) 
-        VALUES ($patient_id, $room_id, '$admission_date', 'Admitted')";
+        VALUES ('$patient_id', '$room_id', '$admission_date', 'Admitted')";
 
 if (mysqli_query($conn, $sql)) {
-    mysqli_query($conn, "UPDATE rooms SET status = 'Occupied' WHERE id = $room_id");
+    mysqli_query($conn, "UPDATE rooms SET status = 'Occupied' WHERE id = '$room_id'");
     echo "<div class='container' style='text-align: center; margin-top: 60px;'>";
     echo "<div class='card'>";
     echo "<h2 style='color: #198754;'>Patient Admitted Successfully!</h2>";

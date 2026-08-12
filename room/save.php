@@ -9,11 +9,11 @@
 <?php
 include "../connection.php";
 
-$room_number = mysqli_real_escape_string($conn, $_POST['room_number']);
-$room_type   = mysqli_real_escape_string($conn, $_POST['room_type']);
-$floor       = intval($_POST['floor']);
-$charge      = floatval($_POST['charge_per_day']);
-$status      = mysqli_real_escape_string($conn, $_POST['status']);
+$room_number = $_POST['room_number'];
+$room_type   = $_POST['room_type'];
+$floor       = $_POST['floor'];
+$charge      = $_POST['charge_per_day'];
+$status      = $_POST['status'];
 
 $sql = "INSERT INTO rooms (room_number, room_type, floor, charge_per_day, status)
         VALUES ('$room_number', '$room_type', '$floor', '$charge', '$status')";

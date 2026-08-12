@@ -9,8 +9,8 @@
 <?php
 include "../connection.php";
 
-$id = intval($_GET['id']);
-$sql = "DELETE FROM bills WHERE id = $id";
+$id = $_GET['id'];
+$sql = "DELETE FROM bills WHERE id=$id";
 
 if (mysqli_query($conn, $sql)) {
     echo "<div class='container' style='text-align: center; margin-top: 60px;'>";

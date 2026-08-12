@@ -9,15 +9,15 @@
 <?php
 include "../connection.php";
 
-$patient_id    = intval($_POST['patient_id']);
-$admission_id  = !empty($_POST['admission_id']) ? intval($_POST['admission_id']) : 'NULL';
-$room_charge   = floatval($_POST['room_charge']);
-$medicine_cost = floatval($_POST['medicine_cost']);
+$patient_id    = $_POST['patient_id'];
+$admission_id  = $_POST['admission_id'];
+$room_charge   = $_POST['room_charge'];
+$medicine_cost = $_POST['medicine_cost'];
 $total_amount  = $room_charge + $medicine_cost;
-$status        = mysqli_real_escape_string($conn, $_POST['payment_status']);
+$status        = $_POST['payment_status'];
 
 $sql = "INSERT INTO bills (patient_id, admission_id, medicine_cost, room_charge, total_amount, payment_status)
-        VALUES ($patient_id, $admission_id, $medicine_cost, $room_charge, $total_amount, '$status')";
+        VALUES ('$patient_id', '$admission_id', '$medicine_cost', '$room_charge', '$total_amount', '$status')";
 
 if (mysqli_query($conn, $sql)) {
     echo "<div class='container' style='text-align: center; margin-top: 60px;'>";
