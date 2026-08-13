@@ -2,10 +2,8 @@
 $depth = 1;
 include "../connection.php";
 
-// Fetch patients
 $patients = mysqli_query($conn, "SELECT * FROM patients ORDER BY name ASC");
 
-// Fetch available rooms
 $rooms = mysqli_query($conn, "SELECT * FROM rooms WHERE status = 'Available' ORDER BY room_number ASC");
 ?>
 <!DOCTYPE html>
